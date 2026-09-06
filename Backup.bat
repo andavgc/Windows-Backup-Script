@@ -118,8 +118,8 @@ For /L %%i in (1,1,%MAX_1%) Do (
     echo.
     
     :: Fast check: skip if no changes
-    %FORFILES% /P "." /C "cmd /c exit 0" >nul 2>&1
-    robocopy "!DIR%%i!" "!DIR%%i!_tmp_check" /E /L /NJH /NJS /NDL /NC /NS
+    :: We use a temporary dir that doesn't exist to compare
+    robocopy "!DIR%%i!" "!DIR%%i!_tmp_check_folder_does_not_exist" /E /L /NJH /NJS /NDL /NC /NS
     IF !ERRORLEVEL! LEQ 1 (
        echo Nenhuma mudança detectada, pulando.
     ) ELSE (
@@ -161,7 +161,7 @@ For /L %%i in (1,1,%MAX_2%) Do (
     echo.
     
     :: Fast check: skip if no changes
-    robocopy "!DIR_B%%i!" "!DIR_B%%i!_tmp_check" /E /L /NJH /NJS /NDL /NC /NS
+    robocopy "!DIR_B%%i!" "!DIR_B%%i!_tmp_check_folder_does_not_exist" /E /L /NJH /NJS /NDL /NC /NS
     IF !ERRORLEVEL! LEQ 1 (
        echo Nenhuma mudança detectada, pulando.
     ) ELSE (
