@@ -9,7 +9,7 @@ This system organizes your backups into **Groups**. Each group has a destination
 1.  **Incremental Updates:** Only new or modified files are added to the `.7z` archive.
 2.  **Cumulative:** If a file is deleted in the source directory, it remains in the archive.
 3.  **Smart Skipping:** The script uses `robocopy` to detect if the source folder has changed; if not, the backup for that folder is skipped, saving time and resources.
-4.  **No History Bloat:** Each group maintains exactly one stable `.7z` file (e.g., `Projetos_Ableton.7z`), overwritten/updated in place.
+4.  **No History Bloat:** Each group maintains exactly one stable `.7z` file (e.g., `MyLabel.7z`), overwritten/updated in place.
 
 ## Setup Instructions
 
