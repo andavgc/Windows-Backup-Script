@@ -93,15 +93,6 @@ echo.
 echo Backing up files.
 echo.
 
-:: Create timestamp.
-SET hh=%time:~0,2%
-if "%time:~0,1%"==" " SET hh=0%hh:~1,1%
-if "%computername%" == "ITS32675" (
-   SET YYYYMMDD_HHMMSS=%date:~6,4%%date:~3,2%%date:~0,2%_%hh%%time:~3,2%%time:~6,2%
-) else (
-   SET YYYYMMDD_HHMMSS=%date:~10,4%%date:~7,2%%date:~4,2%_%hh%%time:~3,2%%time:~6,2%
-)
-
 :: =======================================
 :: GRUPO 1
 :: =======================================
@@ -116,55 +107,30 @@ IF "%BACKUP_HOME_1%" == "" (
    GOTO :DELETE_GROUP1_SKIP
 )
 IF NOT EXIST "%BACKUP_HOME_1%" (
-   echo Warning: BACKUP_HOME_1 [%BACKUP_HOME_1%] nao existe. Pulando Grupo 1.
-   GOTO :DELETE_GROUP1_SKIP
+   mkdir "%BACKUP_HOME_1%"
 )
 
 SetLocal EnableDelayedExpansion
 For /L %%i in (1,1,%MAX_1%) Do (
   IF EXIST "!DIR%%i!" (
     echo.
-    echo Backing up !DIR%%i!
+    echo Verificando mudanças em !DIR%%i!
     echo.
-    cd /d "!DIR%%i!"
-    %ZIP% a "%BACKUP_HOME_1%\!LBL%%i!_%YYYYMMDD_HHMMSS%" ^
-       -ssw                  ^
-       -x^^!".git"           ^
-       -x^^!"noupload"       ^
-       -x^^!"out"            ^
-       -x^^!"target"         ^
-       -xr^^!".history"      ^
-       -xr^^!".databaseDumps" ^
-       -x^^!"build"          ^
-       -x^^!"bin"            ^
-       -x^^!"node_modules"   ^
-       -xr^^!"*.bak"         ^
-       -xr^^!"*.log"         ^
-       -xr^^!"*.gz"          ^
-       -xr^^!"*.7z"          ^
-       -xr^^!"*.zip"
+    
+    :: Fast check: skip if no changes
+    %FORFILES% /P "." /C "cmd /c exit 0" >nul 2>&1
+    robocopy "!DIR%%i!" "!DIR%%i!_tmp_check" /E /L /NJH /NJS /NDL /NC /NS
+    IF !ERRORLEVEL! LEQ 1 (
+       echo Nenhuma mudança detectada, pulando.
+    ) ELSE (
+       echo Backing up !DIR%%i!
+       %ZIP% u -uq0 "%BACKUP_HOME_1%\!LBL%%i!.7z" "!DIR%%i!\*"
+    )
   ) ELSE (
     echo.
     echo Diretorio nao encontrado, pulando: !DIR%%i!
     echo.
   )
-)
-EndLocal
-
-:: Delete old backups - Group 1
-echo.
-echo Deletando backups antigos do Grupo 1...
-echo.
-IF "%DAYS_B4_DELETE_1%" == "" (
-   echo WARNING! DAYS_B4_DELETE_1 nao definido. Nao deletando backups antigos do Grupo 1.
-   GOTO :DELETE_GROUP1_SKIP
-)
-SetLocal EnableDelayedExpansion
-For /L %%i in (1,1,%MAX_1%) Do (
-   echo Verificando arquivos antigos com label: !LBL%%i!
-   %FORFILES% /P "%BACKUP_HOME_1%" /M !LBL%%i!_*.7z /D -%DAYS_B4_DELETE_1% ^
-      /C "CMD /C del /F /Q @FILE & echo Deleted @FILE"
-   echo.
 )
 EndLocal
 
@@ -184,33 +150,24 @@ IF "%BACKUP_HOME_2%" == "" (
    GOTO :DELETE_GROUP2_SKIP
 )
 IF NOT EXIST "%BACKUP_HOME_2%" (
-   echo Warning: BACKUP_HOME_2 [%BACKUP_HOME_2%] nao existe. Pulando Grupo 2.
-   GOTO :DELETE_GROUP2_SKIP
+   mkdir "%BACKUP_HOME_2%"
 )
 
 SetLocal EnableDelayedExpansion
 For /L %%i in (1,1,%MAX_2%) Do (
   IF EXIST "!DIR_B%%i!" (
     echo.
-    echo Backing up !DIR_B%%i!
+    echo Verificando mudanças em !DIR_B%%i!
     echo.
-    cd /d "!DIR_B%%i!"
-    %ZIP% a "%BACKUP_HOME_2%\!LBL_B%%i!_%YYYYMMDD_HHMMSS%" ^
-       -ssw                  ^
-       -x^^!".git"           ^
-       -x^^!"noupload"       ^
-       -x^^!"out"            ^
-       -x^^!"target"         ^
-       -xr^^!".history"      ^
-       -xr^^!".databaseDumps" ^
-       -x^^!"build"          ^
-       -x^^!"bin"            ^
-       -x^^!"node_modules"   ^
-       -xr^^!"*.bak"         ^
-       -xr^^!"*.log"         ^
-       -xr^^!"*.gz"          ^
-       -xr^^!"*.7z"          ^
-       -xr^^!"*.zip"
+    
+    :: Fast check: skip if no changes
+    robocopy "!DIR_B%%i!" "!DIR_B%%i!_tmp_check" /E /L /NJH /NJS /NDL /NC /NS
+    IF !ERRORLEVEL! LEQ 1 (
+       echo Nenhuma mudança detectada, pulando.
+    ) ELSE (
+       echo Backing up !DIR_B%%i!
+       %ZIP% u -uq0 "%BACKUP_HOME_2%\!LBL_B%%i!.7z" "!DIR_B%%i!\*"
+    )
   ) ELSE (
     echo.
     echo Diretorio nao encontrado, pulando: !DIR_B%%i!
@@ -219,24 +176,8 @@ For /L %%i in (1,1,%MAX_2%) Do (
 )
 EndLocal
 
-:: Delete old backups - Group 2
-echo.
-echo Deletando backups antigos do Grupo 2...
-echo.
-IF "%DAYS_B4_DELETE_2%" == "" (
-   echo WARNING! DAYS_B4_DELETE_2 nao definido. Nao deletando backups antigos do Grupo 2.
-   GOTO :DELETE_GROUP2_SKIP
-)
-SetLocal EnableDelayedExpansion
-For /L %%i in (1,1,%MAX_2%) Do (
-   echo Verificando arquivos antigos com label: !LBL_B%%i!
-   %FORFILES% /P "%BACKUP_HOME_2%" /M !LBL_B%%i!_*.7z /D -%DAYS_B4_DELETE_2% ^
-      /C "CMD /C del /F /Q @FILE & echo Deleted @FILE"
-   echo.
-)
-EndLocal
-
 :DELETE_GROUP2_SKIP
+
 
 :END
 :: Uncomment the "pause" line if you want the command window to stick around
