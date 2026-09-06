@@ -11,44 +11,33 @@ This system organizes your backups into **Groups**. Each group has a destination
 3.  **Smart Skipping:** The script uses `robocopy` to detect if the source folder has changed; if not, the backup for that folder is skipped, saving time and resources.
 4.  **No History Bloat:** Each group maintains exactly one stable `.7z` file (e.g., `Projetos_Ableton.7z`), overwritten/updated in place.
 
-## Current Setup (`LOQ-Andres`)
-Your configuration supports two groups:
-
-*   **Group 1: Music & Ableton Projects**
-    *   **Destination:** `E:\BackUp\Musicas\backup Ableton`
-    *   **Includes:** Ableton projects, samples, and My songs.
-*   **Group 2: RetroBat (Games)**
-    *   **Destination:** `E:\BackUp\Games\Retrobat`
-    *   **Includes:** RetroBat saves and ROMs.
-
-*Scheduling is configured to run weekly (`SET DAYS=7`).*
-
 ## Setup Instructions
 
-### 1. Configuration
-Create or edit `backup-settings-for-%computername%.bat`.
+### 1. Create your personal configuration file
+The script looks for a settings file named `backup-settings-for-%computername%.bat`, where `%computername%` is your PC's name. Find it by running `echo %computername%` in a Command Prompt.
 
-```bat
-:: ===== GRUPO 1 =====
-SET BACKUP_HOME_1=C:\Path\To\Destination1
-SET MAX_1=1
-SET DIR1="C:\Path\To\Source1"
-SET LBL1=Label1
+1. Copy the provided template to your machine's settings file:
+   ```
+   copy backup-settings-template.bat backup-settings-for-%computername%.bat
+   ```
+2. Open `backup-settings-for-%computername%.bat` and edit the values for **your** environment:
+   * `BACKUP_HOME_1` / `BACKUP_HOME_2` — the **destination** folders where archives are saved.
+   * `DIR1`, `DIR2`, ... / `DIR_B1`, `DIR_B2`, ... — the **source** folders you want to back up.
+   * `LBL1`, `LBL2`, ... / `LBL_B1`, ... — short, space-free **labels** used for the archive filenames.
+   * `MAX_1` / `MAX_2` — how many `DIR`/`LBL` pairs you defined for each group.
+   * `DAYS` — how often (in days) to run, used when scheduling.
+   * `SCHED_TASK_LABEL` — name for the Windows scheduled task.
+   * Remove Group 2's variables entirely if you only need one group.
 
-:: ===== GRUPO 2 =====
-SET BACKUP_HOME_2=C:\Path\To\Destination2
-SET MAX_2=1
-SET DIR_B1="C:\Path\To\Source2"
-SET LBL_B1=Label2
-
-:: ===== AGENDAMENTO =====
-SET DAYS=7
-SET SCHED_TASK_LABEL=Backup my PC every week
-```
+> **Privacy:** Your settings file is machine-specific and holds your personal paths and PC name. It matches `backup-settings-for-*` in `.gitignore`, so it is **never committed** to the repository. Only the generic `backup-settings-template.bat` is versioned. You must create your own copy locally — do not commit your personal file.
 
 ### 2. Running
 *   **Manual:** Double-click `Backup.bat`.
-*   **Schedule:** Run `Backup.bat sched` as Administrator.
+*   **Schedule:** Run `Backup.bat sched` as Administrator (this registers the weekly Windows scheduled task).
+
+### 3. Requirements
+*   **7-Zip** installed at `C:\Program Files\7-Zip\7z.exe` (edit `ZIP` in `Backup.bat` if different).
+*   Windows `robocopy` and `forfiles` (built in).
 
 ## Limitations
 *   **Windows Only:** Designed for Windows batch environments.
